@@ -31,11 +31,14 @@ conan-source:
 .PHONY: conan-install
 .ONESHELL: conan-install
 conan-install:
-	conan install . \
-	--install-folder $(BUILD_DIR) \
-	--settings os=$(OS) \
-	--settings build_type=$(BUILD_TYPE) \
-	--settings arch=$(ARCH)
+	if [ ! -d "$(BUILD_DIR)" ]; then
+		conan install . \
+		--build missing \
+		--install-folder $(BUILD_DIR) \
+		--settings os=$(OS) \
+		--settings build_type=$(BUILD_TYPE) \
+		--settings arch=$(ARCH)
+	fi
 
 .PHONY: conan-build
 .ONESHELL: conan-build
