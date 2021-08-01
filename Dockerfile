@@ -48,4 +48,6 @@ libxt-dev \
 libxtst-dev \
 libxv-dev \
 libxvmc-dev \
+xkb-data \
+xorg-dev \
 && sudo rm -rf /var/lib/apt/lists/*
