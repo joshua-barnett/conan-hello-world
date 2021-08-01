@@ -19,6 +19,8 @@ IMAGE := $(shell echo $(PROJECT):$(OS) | tr A-Z a-z)
 TARGET := $(shell echo $(OS) | tr A-Z a-z)
 WORKDIR := $(shell echo /home/conan/$(PROJECT) | tr A-Z a-z)
 
+export DOCKER_BUILDKIT = 1
+
 .PHONY: conan-source
 .ONESHELL: conan-source
 conan-source:
@@ -54,6 +56,7 @@ build: conan-build
 .ONESHELL: docker-build
 docker-build:
 	docker build \
+	--build-arg BUILDKIT_INLINE_CACHE=1 \
 	--target $(TARGET) \
 	--tag $(IMAGE) .
 
@@ -65,7 +68,9 @@ clean:
 .PHONY: docker-run
 .ONESHELL: docker-run
 docker-run: docker-build
-	docker run --interactive \
+	docker run \
+	--interactive \
+	--tty \
 	--rm \
 	--volume $(CONAN_CACHE_VOLUME):/home/conan/.conan \
 	--volume $(PWD):$(WORKDIR) \
