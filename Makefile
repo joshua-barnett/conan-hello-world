@@ -1,51 +1,49 @@
 .DEFAULT_GOAL = docker-run
-
-SOURCE_DIR = src
+PROJECT = conan-hello-world
 
 OS = Windows
 ARCH = x86_64
+COMPILER = gcc
+COMPILER_VERSION = 7
 BUILD_TYPE = Release
 BUILD_DIR_PREFIX = build
-BUILD_DIR = $(BUILD_DIR_PREFIX)_$(OS)_$(ARCH)_$(BUILD_TYPE)
+CONAN_CACHE_VOLUME_PREFIX = cache
+CONTAINER_NAME_PREFIX = build
+SOURCE_DIR = SnakeGame
 
-PROJECT = hello-world
-ifeq ($(OS),Windows)
-	CONAN_IMAGE_VERSION = gcc7-mingw
-endif
-ifeq ($(OS),Linux)
-	CONAN_IMAGE_VERSION = gcc7
-endif
-CONAN_CACHE_VOLUME = $(PROJECT)_$(CONAN_IMAGE_VERSION)_conan_cache
-CONTAINER_NAME = $(PROJECT)_conan_env
-IMAGE = $(PROJECT):$(CONAN_IMAGE_VERSION)
-WORKDIR = /home/conan/$(PROJECT)
+BUILD_DIR := $(shell echo $(BUILD_DIR_PREFIX)_$(OS)_$(ARCH)_$(BUILD_TYPE) | tr A-Z a-z)
+INSTALL_DIR = $(BUILD_DIR)
+CONAN_CACHE_VOLUME := $(shell echo $(PROJECT)_$(CONAN_CACHE_VOLUME_PREFIX)_$(OS) | tr A-Z a-z)
+CONTAINER_NAME := $(shell echo $(PROJECT)_$(CONTAINER_NAME_PREFIX)_$(OS) | tr A-Z a-z)
+IMAGE := $(shell echo $(PROJECT):$(OS) | tr A-Z a-z)
+TARGET := $(shell echo $(OS) | tr A-Z a-z)
+WORKDIR := $(shell echo /home/conan/$(PROJECT) | tr A-Z a-z)
 
 .PHONY: conan-source
 .ONESHELL: conan-source
 conan-source:
 	if [ ! -d "$(SOURCE_DIR)" ]; then
-		conan source . \
-		--source-folder $(SOURCE_DIR)
+		conan source .
 	fi
 
 .PHONY: conan-install
 .ONESHELL: conan-install
 conan-install:
-	if [ ! -d "$(BUILD_DIR)" ]; then
-		conan install . \
-		--build missing \
-		--install-folder $(BUILD_DIR) \
-		--settings os=$(OS) \
-		--settings build_type=$(BUILD_TYPE) \
-		--settings arch=$(ARCH)
-	fi
+	conan install . \
+	--build missing \
+	--install-folder $(INSTALL_DIR) \
+	--settings os=$(OS) \
+	--settings arch=$(ARCH) \
+	--settings compiler=$(COMPILER) \
+	--settings compiler.version=$(COMPILER_VERSION) \
+	--settings build_type=$(BUILD_TYPE)
 
 .PHONY: conan-build
 .ONESHELL: conan-build
 conan-build:
 	conan build . \
-	--build-folder $(BUILD_DIR) \
-	--source-folder $(SOURCE_DIR)
+	--install-folder $(INSTALL_DIR) \
+	--build-folder $(BUILD_DIR)
 
 .PHONY: build
 build: conan-source
@@ -56,14 +54,13 @@ build: conan-build
 .ONESHELL: docker-build
 docker-build:
 	docker build \
-	--build-arg CONAN_IMAGE_VERSION=$(CONAN_IMAGE_VERSION) \
+	--target $(TARGET) \
 	--tag $(IMAGE) .
 
 .PHONY: clean
 .ONESHELL: clean
 clean:
 	rm -rf $(BUILD_DIR_PREFIX)*
-	# rm -rf $(SOURCE_DIR)
 
 .PHONY: docker-run
 .ONESHELL: docker-run
@@ -76,9 +73,11 @@ docker-run: docker-build
 	--name $(CONTAINER_NAME) \
 	$(IMAGE) \
 	make \
-	BUILD_DIR=$(BUILD_DIR) \
-	SOURCE_DIR=$(SOURCE_DIR) \
-	OS=$(OS) \
-	BUILD_TYPE=$(BUILD_TYPE) \
 	ARCH=$(ARCH) \
+	BUILD_DIR=$(BUILD_DIR) \
+	BUILD_TYPE=$(BUILD_TYPE) \
+	COMPILER_VERSION=$(COMPILER_VERSION) \
+	COMPILER=$(COMPILER) \
+	INSTALL_DIR=$(INSTALL_DIR) \
+	OS=$(OS) \
 	build

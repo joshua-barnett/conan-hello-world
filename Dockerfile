@@ -1,19 +1,18 @@
-ARG CONAN_IMAGE_VERSION
+FROM conanio/gcc7-mingw AS windows
 
-FROM conanio/${CONAN_IMAGE_VERSION}
+RUN conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan \
+&& conan config set general.revisions_enabled=1
 
-RUN conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
+RUN sudo apt-get update && \
+sudo apt-get install --yes \
+libgl1-mesa-dev \
+&& sudo rm -rf /var/lib/apt/lists/*
 
-RUN conan config set general.revisions_enabled=1
+FROM conanio/gcc7 AS linux
 
-# SDL2 dependencies
+RUN conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan \
+&& conan config set general.revisions_enabled=1
 
-# Window/MinGW
-# RUN sudo apt-get update && \
-# sudo apt-get install --yes \
-# libgl1-mesa-dev
-
-# Linux
 RUN sudo apt-get update && \
 sudo apt-get install --yes \
 libaudio-dev \
@@ -48,4 +47,5 @@ libxss-dev \
 libxt-dev \
 libxtst-dev \
 libxv-dev \
-libxvmc-dev
+libxvmc-dev \
+&& sudo rm -rf /var/lib/apt/lists/*
