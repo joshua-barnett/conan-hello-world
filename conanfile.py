@@ -19,7 +19,7 @@ class ConanHelloWorld(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        if self.settings.os == "Windows":
-            cmake.definitions['CMAKE_CXX_FLAGS'] = "-static-libstdc++ -static-libgcc"
+        # if self.settings.os == "Windows":
+            # cmake.definitions['CMAKE_CXX_FLAGS'] = "-static-libstdc++ -static-libgcc"
         cmake.configure()
         cmake.build()

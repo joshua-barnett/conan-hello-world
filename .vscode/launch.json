@@ -2,26 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
+            "name": "Debug",
+            "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build_windows_x86_64_debug/bin/SnakeGame.exe",
+            "program": "${workspaceFolder}/build/bin/SnakeGame.exe",
             "args": [],
+            "stopAtEntry": true,
             "cwd": "${workspaceFolder}/SnakeGame",
-            "sourceFileMap":{
-                "/home/conan/conan-hello-world": "${workspaceFolder}"
-            },
             "environment": [],
             "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:\\Program Files\\mingw-w64\\x86_64-7.3.0-win32-seh-rt_v5-rev0\\mingw64\\bin\\gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "preLaunchTask": "conan build"
         }
     ]
 }
